@@ -3,9 +3,10 @@ import java.awt.event.*;
 import javax.swing.*;
 
 
+
 public class Reversiv2 extends JFrame {
 
-    private Reversiv2(){
+    protected Reversiv2(){
         Reversiv2Graph content = new Reversiv2Graph();
         setContentPane(content);
         setTitle("Reversi 2.0");
@@ -21,12 +22,14 @@ public class Reversiv2 extends JFrame {
 
 }
 
-class Reversiv2Graph extends JPanel implements MouseListener {
+class Reversiv2Graph extends JPanel implements MouseListener, MouseMotionListener {
     
     final int BLACK = 2;
     final int WHITE = 1;
     final int EMPTY = 0;
     int turn = 2;
+
+    Graphics drawGraphics;
 
     int[][] board = new int[][] {
         {0,0,0,0, 0,0,0,0},
@@ -43,9 +46,13 @@ class Reversiv2Graph extends JPanel implements MouseListener {
     Reversiv2Graph(){
         setBackground(Color.GREEN);
         addMouseListener(this);
+        addMouseMotionListener(this);
     }
 
     public void paintComponent(Graphics g){
+        Font fontBebas = new Font ("Bebas Neue", 1, 30);
+        Font fontBebasSmall = new Font ("Bebas Neue", 1, 20);
+        
         int width = getWidth();
         int height = getHeight();
 
@@ -70,6 +77,35 @@ class Reversiv2Graph extends JPanel implements MouseListener {
                 }
             }
         }
+        g.setFont(fontBebas);
+        g.setColor(Color.decode("#FFFFFF"));
+        g.drawString("Reversi Project", width-190, 50);
+
+        g.setColor(java.awt.Color.white);
+        g.drawRect(width-170, 100 , size*3/2,size*3/2);
+        g.setColor(Color.decode("#FFFFFF"));
+        g.drawString("Turn", width-140, 240);
+
+        if(turn==BLACK){
+            g.setColor(Color.decode("#000000"));
+            g.fillOval(width-163, 108 , size*4/3,size*4/3);
+        }
+        else{
+            g.setColor(Color.decode("#FFFFFF"));
+            g.fillOval(width-163, 108 , size*4/3,size*4/3);
+        }
+
+        g.setColor(java.awt.Color.white);
+        g.fillRect(width-170, 300 ,size*3/2, size*1/2);
+        g.setFont(fontBebasSmall);
+        g.setColor(java.awt.Color.decode("#1B5E20"));
+        g.drawString("New Game", width-150, 325);
+        
+
+
+        
+        
+        
     }
 
 
@@ -77,11 +113,18 @@ class Reversiv2Graph extends JPanel implements MouseListener {
     
     public void mouseReleased(MouseEvent evt){ }
         
-    public void mouseDragged(MouseEvent evt) { } 
+    public void mouseDragged(MouseEvent evt) {
+         
+        
+    } 
     
-    public void mouseEntered(MouseEvent evt) { }   
+   
+    public void mouseEntered(MouseEvent evt) { 
+
+    }   
     public void mouseExited(MouseEvent evt) { }    
 
+    
     public void mouseClicked(MouseEvent evt) { 
         int width = getWidth();
         int height = getHeight();
@@ -89,20 +132,47 @@ class Reversiv2Graph extends JPanel implements MouseListener {
 
         int x = evt.getX();
         int y = evt.getY();
+        if(x<height){
+            int col = (int)Math.floor(x/size);
+            int row = (int)Math.floor(y/size);
+            System.out.print("clicked row: "+row+", col: "+col+"\n");
+            
+            makeMove(col, row);
+        }
+        if(x>620 && x<730){
+            System.out.print("x row: "+x);
 
-        int col = (int)Math.floor(x/size);
-        int row = (int)Math.floor(y/size);
-        System.out.print("clicked row: "+row+", col: "+col+"\n");
-        
-        // if(validMove(turn, row, col)){
-        //     board[row][col] = turn;
-        //     this.turn = (turn==BLACK)?WHITE:BLACK;
-        // }
-        // repaint();
-        // this.turn = (turn==BLACK)?WHITE:BLACK;
-        makeMove(col, row);
+            System.out.print("y row: "+y);
+
+            if(y>300 && y<350){
+                newGame();
+            }
+        }
     }   
-    public void mouseMoved(MouseEvent evt) { }   
+    
+    public void mouseMoved(MouseEvent evt) {
+        // int width = getWidth();
+        // int height = getHeight();
+        // int size = height/8;
+        // int x = evt.getX();
+        // int y = evt.getY();
+
+        
+        
+        // if(y<size*8){
+        //     int col = (int)Math.floor(x/size);
+        //     int row = (int)Math.floor(y/size);
+        //     drawGraphics = getGraphics();
+        //     if(makeMoveIsValid(col,row)){
+        //         drawGraphics.setColor(Color.white);
+        //         drawGraphics.drawRect(col*size,row*size,size,size);
+        //     }
+        
+        // }
+        
+        
+        
+     }   
 
     // START MOVEMENT HANDLER
     private boolean validDirection(int dirX, int dirY, int curX, int curY) {
@@ -197,6 +267,11 @@ class Reversiv2Graph extends JPanel implements MouseListener {
     }
     // END MOVEMENT HANDLER
 
+    protected void newGame(){
+       JOptionPane.showMessageDialog(this,"Uwis Nganggo Putih wae, iki isih Beta");
+
+
+    }
     protected boolean validMove(int turn, int row, int col){
         if(board[row][col] != EMPTY) return false;
 
@@ -333,13 +408,11 @@ class Reversiv2Graph extends JPanel implements MouseListener {
 
       
         boolean checked = checkHoriz || checkVerti || checkRowDiagonal || checkColDiagonal;
-        // System.out.println("row = " + checkHoriz);
-        // System.out.println("check = " + checkVerti);
-        // System.out.println("rowD = " + checkRowDiagonal);
-        // System.out.println("colD = " + checkColDiagonal);
-
+  
         return checked;
     
     }
+
+    
 
 }
