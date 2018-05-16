@@ -94,15 +94,108 @@ class Reversiv2Graph extends JPanel implements MouseListener {
         int row = (int)Math.floor(y/size);
         System.out.print("clicked row: "+row+", col: "+col+"\n");
         
-        if(validMove(turn, row, col)){
-            board[row][col] = turn;
-            this.turn = (turn==BLACK)?WHITE:BLACK;
-        }
-        repaint();
+        // if(validMove(turn, row, col)){
+        //     board[row][col] = turn;
+        //     this.turn = (turn==BLACK)?WHITE:BLACK;
+        // }
+        // repaint();
         // this.turn = (turn==BLACK)?WHITE:BLACK;
-        
+        makeMove(col, row);
     }   
     public void mouseMoved(MouseEvent evt) { }   
+
+    // START MOVEMENT HANDLER
+    private boolean validDirection(int dirX, int dirY, int curX, int curY) {
+        int enemy = (turn == WHITE) ? BLACK : WHITE;
+        int x = curX + dirX;
+        int y = curY + dirY;
+        if(x < 0 || y < 0 || x > 7 || y > 7) return false;
+        if(board[y][x]==enemy) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private boolean makeMoveIsValid(int x, int y) {
+        if(board[y][x]==EMPTY || board[y][x]==turn) {
+            if(
+                validDirection(-1,-1, x, y) ||
+                validDirection(-1, 0, x, y) ||
+                validDirection(-1, 1, x, y) ||
+
+                validDirection( 0,-1, x, y) ||
+                validDirection( 0, 1, x, y) ||
+                
+                validDirection( 1,-1, x, y) ||
+                validDirection( 1, 0, x, y) ||
+                validDirection( 1, 1, x, y)
+            ) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+
+    private boolean discFound = false;
+
+    void flipDisc(int dirX, int dirY, int curX, int curY) {
+        if(makeMoveIsValid(curX, curY)) {
+            int initialX = curX;
+            int initialY = curY;
+
+            if(validDirection(dirX, dirY, curX, curY)) {
+                curX += dirX;
+                curY += dirY;
+                while(curX >= 0 && curY >= 0 && curX <=7 && curY <=7) {
+                    if(board[curY][curX]==turn) {
+                        if(!discFound) {
+                            discFound = true;
+                        }
+                        if(curX == initialX && curY == initialY) {
+                            return;
+                        } else {
+                            curX -= dirX;
+                            curY -= dirY;
+                            board[curY][curX] = turn;
+                        }
+                    } else if(board[curY][curX]==EMPTY) {
+                        return;
+                    } else {
+                        curX += dirX;
+                        curY += dirY;
+                    }
+                }
+            }
+        }
+    }
+
+    void makeMove(int x, int y) {
+        flipDisc(-1,-1, x, y);  // TOP LEFT
+        flipDisc(-1, 0, x, y);  // LEFT
+        flipDisc(-1, 1, x, y);  // BOTTOM LEFT
+
+        flipDisc( 0,-1, x, y);  // TOP
+        flipDisc( 0, 1, x, y);  // BOTTOM
+        
+        flipDisc( 1,-1, x, y);  // TOP RIGHT
+        flipDisc( 1, 0, x, y);  // RIGHT
+        flipDisc( 1, 1, x, y);  // BOTTOM RIGHT
+
+        if(discFound) {
+            discFound = false;
+            changeTurn();
+        }
+        repaint();
+    }
+
+    void changeTurn() {
+        turn = (turn == WHITE) ? BLACK : WHITE;
+    }
+    // END MOVEMENT HANDLER
 
     protected boolean validMove(int turn, int row, int col){
         if(board[row][col] != EMPTY) return false;
