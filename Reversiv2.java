@@ -96,18 +96,156 @@ class Reversiv2Graph extends JPanel implements MouseListener {
         
         if(validMove(turn, row, col)){
             board[row][col] = turn;
+            this.turn = (turn==BLACK)?WHITE:BLACK;
         }
         repaint();
-        this.turn = (turn==BLACK)?WHITE:BLACK;
+        // this.turn = (turn==BLACK)?WHITE:BLACK;
         
     }   
     public void mouseMoved(MouseEvent evt) { }   
-    
-    protected boolean validMove(int turn, int row, int col){
-        if(board[row][col] != EMPTY)
-        return false;
 
-        return true;
+    protected boolean validMove(int turn, int row, int col){
+        if(board[row][col] != EMPTY) return false;
+
+        boolean checkVerti = false;
+        boolean checkHoriz = false;
+        boolean checkRowDiagonal = false;
+        boolean checkColDiagonal = false;
+
+        int lastValidPiece;
+
+        //check row
+        //horizontal
+        if(row >= 1 && row < 7){
+            //horizontal
+            if(board[row-1][col] != EMPTY) {
+                for(int i=0; i<row; i++){
+                    if(board[i][col] == turn){
+                        checkVerti = true;
+                        System.out.println("ada " +turn+ "di "+ i);
+                    }
+                }
+                        
+            }
+            
+            
+            if(board[row+1][col] != EMPTY) {
+                for(int i=0; row+i<=7; i++){
+                    if(board[row+i][col] == turn){
+                        checkVerti = true;
+                        System.out.println("ada " +turn+ "di "+ (row+i));
+                    }
+                }
+            }
+
+        }
+        
+        if(row == 0 ){
+            if(board[row+1][col] != EMPTY) checkVerti = true;
+            //diagonal 
+            if(col == 0) {
+             if(board[row+1][col+1] != EMPTY) checkVerti = true;
+            }
+            if(col == 7) {
+                if(board[row+1][col-1] != EMPTY) checkVerti = true;
+               }
+        }
+        if(row == 7) {
+            if(board[row-1][col] != EMPTY) checkVerti = true;
+
+            if(col == 7){
+                if(board[row-1][col-1] != EMPTY) checkRowDiagonal = true;
+            }
+            if(col == 0){
+                if(board[row-1][col+1] != EMPTY) checkRowDiagonal = true;
+            }
+        }
+
+        //check col
+        //veritcal
+        if(col >= 1 && col < 7){
+            if(board[row][col+1] != EMPTY)  {
+                for(int i=0; col+i<=7; i++){
+                    if(board[row][col+i] == turn){
+                        checkHoriz = true;
+                        System.out.println("ada " +turn+ "di col"+ (col+i));
+                    }
+                }
+            }
+            if(board[row][col-1] != EMPTY) {
+                for(int i=0; i<row; i++){
+                    if(board[row][i] == turn){
+                        checkHoriz = true;
+                        System.out.println("ada " +turn+ "di col"+ i);
+                    }
+                };
+            }
+
+           
+        }
+        if(col == 0){
+            if(board[row][col+1] != EMPTY) checkVerti = true; 
+
+            if(row == 0){
+                if(board[row+1][col+1] != EMPTY) checkRowDiagonal = true;
+            }
+        }
+        if(col == 7){
+            if(board[row][col-1] != EMPTY) checkVerti = true;
+
+            if(row == 7){
+                if(board[row-1][col-1] != EMPTY) checkRowDiagonal = true;
+            }
+        }
+
+        //diagonal
+        if(col > 0 && col <7){
+            
+            //check coloum diagonal
+            if (row > 0 && row <7){
+                
+                if(board[row-1][col-1] != EMPTY) checkColDiagonal = true;
+                if(board[row-1][col+1] != EMPTY) checkColDiagonal = true;
+                if(board[row+1][col+1] != EMPTY) checkColDiagonal = true;
+                if(board[row+1][col-1] != EMPTY) checkColDiagonal = true;
+            }
+            if (row == 0){
+                if(board[row+1][col+1] != EMPTY) checkRowDiagonal = true;
+                if(board[row+1][col-1] != EMPTY) checkRowDiagonal = true;
+            }
+            if (row == 7){
+                if(board[row-1][col+1] != EMPTY) checkRowDiagonal = true;
+                if(board[row-1][col-1] != EMPTY) checkRowDiagonal = true;
+            }
+
+        }
+
+        if(row > 0 && row <7){
+            if (col > 0 && col < 7){
+                if(board[row-1][col-1] != EMPTY) checkRowDiagonal = true;
+                if(board[row-1][col+1] != EMPTY) checkRowDiagonal = true;
+                if(board[row+1][col+1] != EMPTY) checkRowDiagonal = true;
+                if(board[row+1][col-1] != EMPTY) checkRowDiagonal = true;
+            }
+            if (col == 0){
+                if(board[row+1][col+1] != EMPTY) checkRowDiagonal = true;
+                if(board[row-1][col+1] != EMPTY) checkRowDiagonal = true;
+            }
+            if (col == 7){
+                if(board[row+1][col-1] != EMPTY) checkRowDiagonal = true;
+                if(board[row-1][col-1] != EMPTY) checkRowDiagonal = true;
+            }
+        }
+
+
+      
+        boolean checked = checkHoriz || checkVerti || checkRowDiagonal || checkColDiagonal;
+        // System.out.println("row = " + checkHoriz);
+        // System.out.println("check = " + checkVerti);
+        // System.out.println("rowD = " + checkRowDiagonal);
+        // System.out.println("colD = " + checkColDiagonal);
+
+        return checked;
     
     }
 
