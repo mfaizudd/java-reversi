@@ -22,8 +22,9 @@ public class Reversiv2 extends JFrame {
 
 }
 
-class Reversiv2Graph extends JPanel implements MouseListener, MouseMotionListener {
+class Reversiv2Graph extends JPanel implements MouseListener {
     
+    final int VALID = 3;
     final int BLACK = 2;
     final int WHITE = 1;
     final int EMPTY = 0;
@@ -46,12 +47,12 @@ class Reversiv2Graph extends JPanel implements MouseListener, MouseMotionListene
     Reversiv2Graph(){
         setBackground(Color.GREEN);
         addMouseListener(this);
-        addMouseMotionListener(this);
+        // addMouseMotionListener(this);
     }
 
     public void paintComponent(Graphics g){
-        Font fontBebas = new Font ("Bebas Neue", 1, 30);
-        Font fontBebasSmall = new Font ("Bebas Neue", 1, 20);
+        Font fontBebas = new Font ("Segoe UI", 1, 30);
+        Font fontBebasSmall = new Font ("Segoe UI", 1, 20);
         
         int width = getWidth();
         int height = getHeight();
@@ -268,9 +269,19 @@ class Reversiv2Graph extends JPanel implements MouseListener, MouseMotionListene
     // END MOVEMENT HANDLER
 
     protected void newGame(){
+        board = new int[][] {
+            {0,0,0,0, 0,0,0,0},
+            {0,0,0,0, 0,0,0,0},
+            {0,0,0,0, 0,0,0,0},
+            {0,0,0,1, 2,0,0,0},
+
+            {0,0,0,2, 1,0,0,0},
+            {0,0,0,0, 0,0,0,0},
+            {0,0,0,0, 0,0,0,0},
+            {0,0,0,0, 0,0,0,0}
+        };
+        repaint();
        JOptionPane.showMessageDialog(this,"Uwis Nganggo Putih wae, iki isih Beta");
-
-
     }
     protected boolean validMove(int turn, int row, int col){
         if(board[row][col] != EMPTY) return false;
