@@ -50,12 +50,38 @@ class Reversiv2Graph extends JPanel implements MouseListener {
         // addMouseMotionListener(this);
     }
 
+    public int totalWhite = 0;
+    public int totalBlack = 0;
+
     public void paintComponent(Graphics g){
+        totalWhite = 0;
+        totalBlack = 0;
+        int validCount = 0;
         Font fontBebas = new Font ("Segoe UI", 1, 30);
         Font fontBebasSmall = new Font ("Segoe UI", 1, 20);
         
         int width = getWidth();
         int height = getHeight();
+        
+        for(int row = 0; row<board.length;row++) {
+            for(int col=0; col<board[row].length;col++) {
+                if(board[row][col]==VALID) {
+                    board[row][col] = EMPTY;
+                } else if(board[row][col]==WHITE) {
+                    totalWhite++;
+                } else if(board[row][col]==BLACK) {
+                    totalBlack++;
+                }
+            }
+        }
+        for(int row = 0; row<board.length;row++) {
+            for(int col=0; col<board[row].length;col++) {
+                if(board[row][col] == EMPTY && checkDirection(col, row)) {
+                    board[row][col] = VALID;
+                    validCount++;
+                }
+            }
+        }
 
         int size = height/8;
         g.setColor(java.awt.Color.decode("#1B5E20"));
@@ -64,7 +90,6 @@ class Reversiv2Graph extends JPanel implements MouseListener {
             for(int col = 0; col < board[row].length; col++) {
                 g.setColor(java.awt.Color.black);
                 g.drawRect(row*size, col*size, size,size);
-                
             }
         }
         for(int row = 0; row < board.length; row++) {
@@ -75,6 +100,9 @@ class Reversiv2Graph extends JPanel implements MouseListener {
                 } else if (board[row][col]==2) {
                     g.setColor(Color.decode("#000000"));
                     g.fillOval(col*size+5, row*size+5, size*7/8,size*7/8);
+                } else if(board[row][col]==VALID) {
+                    g.setColor(Color.decode("#0000FF"));
+                    g.fillOval(col*size+((size-(size*1/2))/2), row*size+((size-(size*1/2))/2), size*1/2,size*1/2);
                 }
             }
         }
@@ -102,11 +130,15 @@ class Reversiv2Graph extends JPanel implements MouseListener {
         g.setColor(java.awt.Color.decode("#1B5E20"));
         g.drawString("New Game", width-150, 325);
         
-
-
-        
-        
-        
+        if(validCount<=0) {
+            if(totalWhite<totalBlack) {
+                System.out.println("Black win");
+            } else if(totalWhite==totalBlack) {
+                System.out.println("Draw");
+            } else {
+                System.out.println("White");
+            }
+        }
     }
 
 
@@ -189,7 +221,7 @@ class Reversiv2Graph extends JPanel implements MouseListener {
     }
 
     private boolean makeMoveIsValid(int x, int y) {
-        if(board[y][x]==EMPTY || board[y][x]==turn) {
+        if(board[y][x]==EMPTY || board[y][x]==VALID) {
             if(
                 validDirection(-1,-1, x, y) ||
                 validDirection(-1, 0, x, y) ||
@@ -213,54 +245,105 @@ class Reversiv2Graph extends JPanel implements MouseListener {
 
     private boolean discFound = false;
 
-    void flipDisc(int dirX, int dirY, int curX, int curY) {
-        if(makeMoveIsValid(curX, curY)) {
-            int initialX = curX;
-            int initialY = curY;
+    boolean checkDirection(int x, int y){
+        if(makeMoveIsValid(x,y)) {
+            if(
+                directionHelper(-1,-1, x, y) ||
+                directionHelper(-1, 0, x, y) ||
+                directionHelper(-1, 1, x, y) ||
 
-            if(validDirection(dirX, dirY, curX, curY)) {
-                curX += dirX;
-                curY += dirY;
-                while(curX >= 0 && curY >= 0 && curX <=7 && curY <=7) {
-                    if(board[curY][curX]==turn) {
-                        if(!discFound) {
-                            discFound = true;
-                        }
-                        if(curX == initialX && curY == initialY) {
-                            return;
-                        } else {
-                            curX -= dirX;
-                            curY -= dirY;
-                            board[curY][curX] = turn;
-                        }
-                    } else if(board[curY][curX]==EMPTY) {
+                directionHelper( 0,-1, x, y) ||
+                directionHelper( 0, 1, x, y) ||
+
+                directionHelper( 1,-1, x, y) ||
+                directionHelper( 1, 0, x, y) ||
+                directionHelper( 1, 1, x, y)
+            ) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+
+    boolean directionHelper(int dirX, int dirY, int curX, int curY) {
+        boolean myDiscFound = false;
+        int initialX = curX;
+        int initialY = curY;
+        if(validDirection(dirX, dirY, curX, curY)) {
+            curX += dirX;
+            curY += dirY;
+            while(curX >= 0 && curY >= 0 && curX <=7 && curY <=7) {
+                if(board[curY][curX]==turn || myDiscFound) {
+                    if(!myDiscFound) {
+                        myDiscFound = true;
+                    }
+                    if(curX == initialX && curY == initialY) {
+                        return myDiscFound;
+                    } else {
+                        curX -= dirX;
+                        curY -= dirY;
+                    }
+                } else if(board[curY][curX]==EMPTY) {
+                    return false;
+                } else {
+                    curX += dirX;
+                    curY += dirY;
+                }
+            }
+        }
+        return myDiscFound;
+    }
+
+    void flipDisc(int dirX, int dirY, int curX, int curY) {
+        int initialX = curX;
+        int initialY = curY;
+        if(validDirection(dirX, dirY, curX, curY)) {
+            curX += dirX;
+            curY += dirY;
+            while(curX >= 0 && curY >= 0 && curX <=7 && curY <=7) {
+                if(board[curY][curX]==turn) {
+                    if(!discFound) {
+                        discFound = true;
+                    }
+                    if(curX == initialX && curY == initialY) {
                         return;
                     } else {
-                        curX += dirX;
-                        curY += dirY;
+                        curX -= dirX;
+                        curY -= dirY;
+                        board[curY][curX] = turn;
                     }
+                } else if(board[curY][curX]==EMPTY) {
+                    return;
+                } else {
+                    curX += dirX;
+                    curY += dirY;
                 }
             }
         }
     }
 
     void makeMove(int x, int y) {
-        flipDisc(-1,-1, x, y);  // TOP LEFT
-        flipDisc(-1, 0, x, y);  // LEFT
-        flipDisc(-1, 1, x, y);  // BOTTOM LEFT
+        if(makeMoveIsValid(x, y)) {
+            flipDisc(-1,-1, x, y);  // TOP LEFT
+            flipDisc(-1, 0, x, y);  // LEFT
+            flipDisc(-1, 1, x, y);  // BOTTOM LEFT
 
-        flipDisc( 0,-1, x, y);  // TOP
-        flipDisc( 0, 1, x, y);  // BOTTOM
-        
-        flipDisc( 1,-1, x, y);  // TOP RIGHT
-        flipDisc( 1, 0, x, y);  // RIGHT
-        flipDisc( 1, 1, x, y);  // BOTTOM RIGHT
+            flipDisc( 0,-1, x, y);  // TOP
+            flipDisc( 0, 1, x, y);  // BOTTOM
+            
+            flipDisc( 1,-1, x, y);  // TOP RIGHT
+            flipDisc( 1, 0, x, y);  // RIGHT
+            flipDisc( 1, 1, x, y);  // BOTTOM RIGHT
 
-        if(discFound) {
-            discFound = false;
-            changeTurn();
+            if(discFound) {
+                discFound = false;
+                changeTurn();
+            }
+            repaint();
         }
-        repaint();
     }
 
     void changeTurn() {
