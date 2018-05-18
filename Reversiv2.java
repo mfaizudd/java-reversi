@@ -24,10 +24,12 @@ public class Reversiv2 extends JFrame {
 
 class Reversiv2Graph extends JPanel implements MouseListener, MouseMotionListener {
     
+    final int VALID = 3;
     final int BLACK = 2;
     final int WHITE = 1;
     final int EMPTY = 0;
     int turn = 2;
+    boolean gameOver = false;
 
     Graphics drawGraphics;
 
@@ -44,26 +46,54 @@ class Reversiv2Graph extends JPanel implements MouseListener, MouseMotionListene
     };
 
     Reversiv2Graph(){
-        setBackground(Color.GREEN);
         addMouseListener(this);
         addMouseMotionListener(this);
     }
 
+    public int totalWhite = 0;
+    public int totalBlack = 0;
+   
+
     public void paintComponent(Graphics g){
-        Font fontBebas = new Font ("Bebas Neue", 1, 30);
-        Font fontBebasSmall = new Font ("Bebas Neue", 1, 20);
+        totalWhite = 0;
+        totalBlack = 0;
+        int validCount = 0;
+        
+        Font fontBebas = new Font ("Segoe UI", 1, 25);
+        Font fontBebasH2 = new Font ("Segoe UI", 1, 20);
+        
+        Font fontBebasSmall = new Font ("Segoe UI", 1, 15);
         
         int width = getWidth();
         int height = getHeight();
+        
+        for(int row = 0; row<board.length;row++) {
+            for(int col=0; col<board[row].length;col++) {
+                if(board[row][col]==VALID) {
+                    board[row][col] = EMPTY;
+                } else if(board[row][col]==WHITE) {
+                    totalWhite++;
+                } else if(board[row][col]==BLACK) {
+                    totalBlack++;
+                }
+            }
+        }
+        for(int row = 0; row<board.length;row++) {
+            for(int col=0; col<board[row].length;col++) {
+                if(board[row][col] == EMPTY && checkDirection(col, row)) {
+                    board[row][col] = VALID;
+                    validCount++;
+                }
+            }
+        }
 
         int size = height/8;
-        g.setColor(java.awt.Color.decode("#1B5E20"));
+        g.setColor(java.awt.Color.decode("#0C643A"));
         g.fillRect(0,0,width,height);
         for(int row = 0; row < board.length; row++) {
             for(int col = 0; col < board[row].length; col++) {
                 g.setColor(java.awt.Color.black);
                 g.drawRect(row*size, col*size, size,size);
-                
             }
         }
         for(int row = 0; row < board.length; row++) {
@@ -74,17 +104,21 @@ class Reversiv2Graph extends JPanel implements MouseListener, MouseMotionListene
                 } else if (board[row][col]==2) {
                     g.setColor(Color.decode("#000000"));
                     g.fillOval(col*size+5, row*size+5, size*7/8,size*7/8);
+                } else if(board[row][col]==VALID) {
+                    g.setColor(Color.decode("#0000FF"));
+                    g.fillOval(col*size+((size-(size*1/2))/2), row*size+((size-(size*1/2))/2), size*1/2,size*1/2);
                 }
             }
         }
         g.setFont(fontBebas);
         g.setColor(Color.decode("#FFFFFF"));
-        g.drawString("Reversi Project", width-190, 50);
+        g.drawString("Reversi Project", width-203, 50);
 
         g.setColor(java.awt.Color.white);
         g.drawRect(width-170, 100 , size*3/2,size*3/2);
         g.setColor(Color.decode("#FFFFFF"));
-        g.drawString("Turn", width-140, 240);
+        g.setFont(fontBebasH2);
+        g.drawString("Turn", width-140, 90);
 
         if(turn==BLACK){
             g.setColor(Color.decode("#000000"));
@@ -95,16 +129,28 @@ class Reversiv2Graph extends JPanel implements MouseListener, MouseMotionListene
             g.fillOval(width-163, 108 , size*4/3,size*4/3);
         }
 
-        g.setColor(java.awt.Color.white);
-        g.fillRect(width-170, 300 ,size*3/2, size*1/2);
+        g.setColor(Color.white);
+        g.drawString("Score", width-140, 260);
+     
+        
+        
+        g.setColor(Color.decode("#000000"));
+        g.fillOval(width-150, 270 , size*2/3,size*2/3);
+        g.drawString(totalBlack+"", width-90, 300);
+        
+        g.setColor(Color.decode("#FFFFFF"));
+        g.fillOval(width-150, 330 , size*2/3,size*2/3);
+        g.drawString(totalWhite+"", width-90, 360);
+        
         g.setFont(fontBebasSmall);
+        g.setColor(java.awt.Color.white);
+        g.fillRect(width-170, 450 ,size*3/2, size*1/2);
         g.setColor(java.awt.Color.decode("#1B5E20"));
-        g.drawString("New Game", width-150, 325);
+        g.drawString("New Game", width-155, 475);
         
-
-
+       
         
-        
+        checkWinner(totalBlack,totalWhite, validCount);
         
     }
 
@@ -134,19 +180,13 @@ class Reversiv2Graph extends JPanel implements MouseListener, MouseMotionListene
         int y = evt.getY();
         if(x<height){
             int col = (int)Math.floor(x/size);
-            int row = (int)Math.floor(y/size);
-            System.out.print("clicked row: "+row+", col: "+col+"\n");
+            int row = (int)Math.floor(y/size);System.out.print("clicked row: "+row+", col: "+col+"\n");
             
             makeMove(col, row);
         }
-        if(x>620 && x<730){
-            System.out.print("x row: "+x);
-
-            System.out.print("y row: "+y);
-
-            if(y>300 && y<350){
+            
+        if(x>width-170 && y>450 && y<480){
                 newGame();
-            }
         }
     }   
     
@@ -154,23 +194,20 @@ class Reversiv2Graph extends JPanel implements MouseListener, MouseMotionListene
         int width = getWidth();
         int height = getHeight();
         int size = height/8;
+
         int x = evt.getX();
         int y = evt.getY();
 
-        
-        
-        if(y<size*8){
-            int col = (int)Math.floor(x/size);
-            int row = (int)Math.floor(y/size);
-            drawGraphics = getGraphics();
-            if(makeMoveIsValid(col,row)){
-                drawGraphics.setColor(Color.white);
-                drawGraphics.drawRect(col*size,row*size,size,size);
+        if(x>width-170 && y>450 && y<480){
+                setCursor(new Cursor(Cursor.HAND_CURSOR));
             }
-        
+
+        else{
+           setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
         }
-        
-        
+
+    
+       
      }   
 
     // START MOVEMENT HANDLER
@@ -187,7 +224,7 @@ class Reversiv2Graph extends JPanel implements MouseListener, MouseMotionListene
     }
 
     private boolean makeMoveIsValid(int x, int y) {
-        if(board[y][x]==EMPTY || board[y][x]==turn) {
+        if(board[y][x]==EMPTY || board[y][x]==VALID) {
             if(
                 validDirection(-1,-1, x, y) ||
                 validDirection(-1, 0, x, y) ||
@@ -211,54 +248,106 @@ class Reversiv2Graph extends JPanel implements MouseListener, MouseMotionListene
 
     private boolean discFound = false;
 
-    void flipDisc(int dirX, int dirY, int curX, int curY) {
-        if(makeMoveIsValid(curX, curY)) {
-            int initialX = curX;
-            int initialY = curY;
+    boolean checkDirection(int x, int y){
+        if(makeMoveIsValid(x,y)) {
+            if(
+                directionHelper(-1,-1, x, y) ||
+                directionHelper(-1, 0, x, y) ||
+                directionHelper(-1, 1, x, y) ||
 
-            if(validDirection(dirX, dirY, curX, curY)) {
-                curX += dirX;
-                curY += dirY;
-                while(curX >= 0 && curY >= 0 && curX <=7 && curY <=7) {
-                    if(board[curY][curX]==turn) {
-                        if(!discFound) {
-                            discFound = true;
-                        }
-                        if(curX == initialX && curY == initialY) {
-                            return;
-                        } else {
-                            curX -= dirX;
-                            curY -= dirY;
-                            board[curY][curX] = turn;
-                        }
-                    } else if(board[curY][curX]==EMPTY) {
+                directionHelper( 0,-1, x, y) ||
+                directionHelper( 0, 1, x, y) ||
+
+                directionHelper( 1,-1, x, y) ||
+                directionHelper( 1, 0, x, y) ||
+                directionHelper( 1, 1, x, y)
+            ) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+
+    boolean directionHelper(int dirX, int dirY, int curX, int curY) {
+        boolean myDiscFound = false;
+        int initialX = curX;
+        int initialY = curY;
+        if(validDirection(dirX, dirY, curX, curY)) {
+            curX += dirX;
+            curY += dirY;
+            while(curX >= 0 && curY >= 0 && curX <=7 && curY <=7) {
+                if(board[curY][curX]==turn || myDiscFound) {
+                    if(!myDiscFound) {
+                        myDiscFound = true;
+                    }
+                    if(curX == initialX && curY == initialY) {
+                        return myDiscFound;
+                    } else {
+                        curX -= dirX;
+                        curY -= dirY;
+                    }
+                } else if(board[curY][curX]==EMPTY) {
+                    return false;
+                } else {
+                    curX += dirX;
+                    curY += dirY;
+                }
+            }
+        }
+        return myDiscFound;
+    }
+
+    void flipDisc(int dirX, int dirY, int curX, int curY) {
+        int initialX = curX;
+        int initialY = curY;
+        if(validDirection(dirX, dirY, curX, curY)) {
+            curX += dirX;
+            curY += dirY;
+            while(curX >= 0 && curY >= 0 && curX <=7 && curY <=7) {
+                if(board[curY][curX]==turn) {
+                    if(!discFound) {
+                        discFound = true;
+                    }
+                    if(curX == initialX && curY == initialY) {
                         return;
                     } else {
-                        curX += dirX;
-                        curY += dirY;
+                        curX -= dirX;
+                        curY -= dirY;
+                        board[curY][curX] = turn;
                     }
+                } else if(board[curY][curX]==EMPTY) {
+                    return;
+                } else {
+                    curX += dirX;
+                    curY += dirY;
                 }
             }
         }
     }
 
     void makeMove(int x, int y) {
-        flipDisc(-1,-1, x, y);  // TOP LEFT
-        flipDisc(-1, 0, x, y);  // LEFT
-        flipDisc(-1, 1, x, y);  // BOTTOM LEFT
+        if(makeMoveIsValid(x, y)) {
+            flipDisc(-1,-1, x, y);  // TOP LEFT
+            flipDisc(-1, 0, x, y);  // LEFT
+            flipDisc(-1, 1, x, y);  // BOTTOM LEFT
 
-        flipDisc( 0,-1, x, y);  // TOP
-        flipDisc( 0, 1, x, y);  // BOTTOM
-        
-        flipDisc( 1,-1, x, y);  // TOP RIGHT
-        flipDisc( 1, 0, x, y);  // RIGHT
-        flipDisc( 1, 1, x, y);  // BOTTOM RIGHT
+            flipDisc( 0,-1, x, y);  // TOP
+            flipDisc( 0, 1, x, y);  // BOTTOM
+            
+            flipDisc( 1,-1, x, y);  // TOP RIGHT
+            flipDisc( 1, 0, x, y);  // RIGHT
+            flipDisc( 1, 1, x, y);  // BOTTOM RIGHT
 
-        if(discFound) {
-            discFound = false;
-            changeTurn();
+            if(discFound) {
+                discFound = false;
+                changeTurn();
+            }
+            repaint();
+
         }
-        repaint();
     }
 
     void changeTurn() {
@@ -267,151 +356,61 @@ class Reversiv2Graph extends JPanel implements MouseListener, MouseMotionListene
     // END MOVEMENT HANDLER
 
     protected void newGame(){
-       JOptionPane.showMessageDialog(this,"Uwis Nganggo Putih wae, iki isih Beta");
 
-
-    }
-    protected boolean validMove(int turn, int row, int col){
-        if(board[row][col] != EMPTY) return false;
-
-        boolean checkVerti = false;
-        boolean checkHoriz = false;
-        boolean checkRowDiagonal = false;
-        boolean checkColDiagonal = false;
-
-        int lastValidPiece;
-
-        //check row
-        //horizontal
-        if(row >= 1 && row < 7){
-            //horizontal
-            if(board[row-1][col] != EMPTY) {
-                for(int i=0; i<row; i++){
-                    if(board[i][col] == turn){
-                        checkVerti = true;
-                        System.out.println("ada " +turn+ "di "+ i);
-                    }
-                }
-                        
-            }
-            
-            
-            if(board[row+1][col] != EMPTY) {
-                for(int i=0; row+i<=7; i++){
-                    if(board[row+i][col] == turn){
-                        checkVerti = true;
-                        System.out.println("ada " +turn+ "di "+ (row+i));
-                    }
-                }
-            }
-
-        }
-        
-        if(row == 0 ){
-            if(board[row+1][col] != EMPTY) checkVerti = true;
-            //diagonal 
-            if(col == 0) {
-             if(board[row+1][col+1] != EMPTY) checkVerti = true;
-            }
-            if(col == 7) {
-                if(board[row+1][col-1] != EMPTY) checkVerti = true;
-               }
-        }
-        if(row == 7) {
-            if(board[row-1][col] != EMPTY) checkVerti = true;
-
-            if(col == 7){
-                if(board[row-1][col-1] != EMPTY) checkRowDiagonal = true;
-            }
-            if(col == 0){
-                if(board[row-1][col+1] != EMPTY) checkRowDiagonal = true;
-            }
-        }
-
-        //check col
-        //veritcal
-        if(col >= 1 && col < 7){
-            if(board[row][col+1] != EMPTY)  {
-                for(int i=0; col+i<=7; i++){
-                    if(board[row][col+i] == turn){
-                        checkHoriz = true;
-                        System.out.println("ada " +turn+ "di col"+ (col+i));
-                    }
-                }
-            }
-            if(board[row][col-1] != EMPTY) {
-                for(int i=0; i<row; i++){
-                    if(board[row][i] == turn){
-                        checkHoriz = true;
-                        System.out.println("ada " +turn+ "di col"+ i);
-                    }
-                };
-            }
-
-           
-        }
-        if(col == 0){
-            if(board[row][col+1] != EMPTY) checkVerti = true; 
-
-            if(row == 0){
-                if(board[row+1][col+1] != EMPTY) checkRowDiagonal = true;
-            }
-        }
-        if(col == 7){
-            if(board[row][col-1] != EMPTY) checkVerti = true;
-
-            if(row == 7){
-                if(board[row-1][col-1] != EMPTY) checkRowDiagonal = true;
-            }
-        }
-
-        //diagonal
-        if(col > 0 && col <7){
-            
-            //check coloum diagonal
-            if (row > 0 && row <7){
-                
-                if(board[row-1][col-1] != EMPTY) checkColDiagonal = true;
-                if(board[row-1][col+1] != EMPTY) checkColDiagonal = true;
-                if(board[row+1][col+1] != EMPTY) checkColDiagonal = true;
-                if(board[row+1][col-1] != EMPTY) checkColDiagonal = true;
-            }
-            if (row == 0){
-                if(board[row+1][col+1] != EMPTY) checkRowDiagonal = true;
-                if(board[row+1][col-1] != EMPTY) checkRowDiagonal = true;
-            }
-            if (row == 7){
-                if(board[row-1][col+1] != EMPTY) checkRowDiagonal = true;
-                if(board[row-1][col-1] != EMPTY) checkRowDiagonal = true;
-            }
-
-        }
-
-        if(row > 0 && row <7){
-            if (col > 0 && col < 7){
-                if(board[row-1][col-1] != EMPTY) checkRowDiagonal = true;
-                if(board[row-1][col+1] != EMPTY) checkRowDiagonal = true;
-                if(board[row+1][col+1] != EMPTY) checkRowDiagonal = true;
-                if(board[row+1][col-1] != EMPTY) checkRowDiagonal = true;
-            }
-            if (col == 0){
-                if(board[row+1][col+1] != EMPTY) checkRowDiagonal = true;
-                if(board[row-1][col+1] != EMPTY) checkRowDiagonal = true;
-            }
-            if (col == 7){
-                if(board[row+1][col-1] != EMPTY) checkRowDiagonal = true;
-                if(board[row-1][col-1] != EMPTY) checkRowDiagonal = true;
-            }
-        }
-
-
-      
-        boolean checked = checkHoriz || checkVerti || checkRowDiagonal || checkColDiagonal;
-  
-        return checked;
+        if(gameOver){
+            board = new int[][] {
+                {0,0,0,0, 0,0,0,0},
+                {0,0,0,0, 0,0,0,0},
+                {0,0,0,0, 0,0,0,0},
+                {0,0,0,1, 2,0,0,0},
     
+                {0,0,0,2, 1,0,0,0},
+                {0,0,0,0, 0,0,0,0},
+                {0,0,0,0, 0,0,0,0},
+                {0,0,0,0, 0,0,0,0}
+            };
+            
+        }
+        else{
+            board = new int[][] {
+                {0,0,0,0, 0,0,0,0},
+                {0,0,0,0, 0,0,0,0},
+                {0,0,0,0, 0,0,0,0},
+                {0,0,0,1, 2,0,0,0},
+    
+                {0,0,0,2, 1,0,0,0},
+                {0,0,0,0, 0,0,0,0},
+                {0,0,0,0, 0,0,0,0},
+                {0,0,0,0, 0,0,0,0}
+            };
+            
+        }      
+      
     }
 
+    void checkWinner(int totalBlack, int totalWhite, int validCount){
+        if( validCount <= 0){
+            if(totalWhite<totalBlack) {
+                    winnerDialog("Black");
+                } else if(totalWhite==totalBlack) {
+                    winnerDialog("Draw");
+                } else {
+                    winnerDialog("White");
+                }
+        }
+    }
+    void winnerDialog(String winner){
+    
+        JOptionPane.showMessageDialog(this,"Selamat " + winner + " Berhasil Menang !\n Main baru lagi yuk");
+        newGame();
+
+        repaint();
+        repaint();
+
+        
+        
+    }
+    
     
 
 }
