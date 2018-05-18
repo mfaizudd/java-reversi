@@ -151,25 +151,24 @@ class Reversiv2Graph extends JPanel implements MouseListener, MouseMotionListene
     }   
     
     public void mouseMoved(MouseEvent evt) {
-        // int width = getWidth();
-        // int height = getHeight();
-        // int size = height/8;
-        // int x = evt.getX();
-        // int y = evt.getY();
+        int width = getWidth();
+        int height = getHeight();
+        int size = height/8;
+        int x = evt.getX();
+        int y = evt.getY();
 
         
         
-        // if(y<size*8){
-        //     int col = (int)Math.floor(x/size);
-        //     int row = (int)Math.floor(y/size);
-        //     drawGraphics = getGraphics();
-        //     if(makeMoveIsValid(col,row)){
-        //         drawGraphics.setColor(Color.white);
-        //         drawGraphics.drawRect(col*size,row*size,size,size);
-        //     }
+        if(y<size*8){
+            int col = (int)Math.floor(x/size);
+            int row = (int)Math.floor(y/size);
+            drawGraphics = getGraphics();
+            if(makeMoveIsValid(col,row)){
+                drawGraphics.setColor(Color.white);
+                drawGraphics.drawRect(col*size,row*size,size,size);
+            }
         
-        // }
-        
+        }
         
         
      }   
