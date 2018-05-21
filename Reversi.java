@@ -5,20 +5,22 @@ import java.awt.event.MouseListener;
 import javax.swing.*;
 class Reversi extends JFrame {
     static final long serialVersionUID = 0;
-    
+
     final int BLACK = 2;
     final int WHITE = 1;
     final int SPACE = 0;
     int turn = 2;
 
     Canvas canvas = new Canvas() {
+
         public void paint(Graphics g) {
             g.setColor(java.awt.Color.decode("#1B5E20"));
             g.fillRect(0,0,800,800);
             for(int row = 0; row < board.length; row++) {
                 for(int col = 0; col < board[row].length; col++) {
                     g.setColor(java.awt.Color.black);
-                    g.drawRect(row*100, col*100, 100,100); 
+                    g.drawRect(row*100, col*100, 100,100);
+                    
                 }
             }
             for(int row = 0; row < board.length; row++) {
@@ -46,10 +48,14 @@ class Reversi extends JFrame {
         {0,0,0,0, 0,0,0,0}
     };
 
+
+    public Graphics graphicsForDrawing;
     Reversi() {
+        
         add(canvas);
         setSize(1200,840);
         setTitle("Reversi");
+        // showValidMove(turn);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         canvas.addMouseListener(new MouseListener(){
         
@@ -70,7 +76,11 @@ class Reversi extends JFrame {
         
             @Override
             public void mouseEntered(MouseEvent e) {
-                
+                int row = (int)Math.floor((e.getY())/100);
+                int col = (int)Math.floor((e.getX())/100);
+                if(validMove(turn, row, col)){
+                    System.out.println("entered : " + col + row);
+                }
             }
         
             @Override
@@ -83,6 +93,16 @@ class Reversi extends JFrame {
             }
         });
     }
+
+    // void showValidMove(int turn){
+    //     for( int row = 0; row<board.length;row++){
+    //         for(int col = 0; col<board[row].length;col++)
+    //             if (validMove(turn, row, col)){
+    //                 System.out.println("hai = " + validMove(turn, row, col));
+                    
+    //                 }
+    //     }
+    // }
 
     void takeTurn(int turn, int row, int col) {
         if(row>=0 && row<board.length && col >= 0 && col < board[row].length) {
@@ -110,6 +130,13 @@ class Reversi extends JFrame {
         if(board[row+1][col+1]!=SPACE) return true;
 
         return false;
+    }
+
+    public void paintValidMove(int row, int col){
+        Graphics g = getGraphics();
+        g.setColor(java.awt.Color.white);
+        g.drawRect(row*100, col*100, 100,100);
+        canvas.repaint();
     }
 
     void showWindow() {
