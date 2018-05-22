@@ -52,12 +52,14 @@ class Reversiv2Graph extends JPanel implements MouseListener, MouseMotionListene
 
     public int totalWhite = 0;
     public int totalBlack = 0;
+    public int validCount = 0;
+    public int winner = 0;
    
 
     public void paintComponent(Graphics g){
         totalWhite = 0;
         totalBlack = 0;
-        int validCount = 0;
+        
         
         Font fontBebas = new Font ("Segoe UI", 1, 25);
         Font fontBebasH2 = new Font ("Segoe UI", 1, 20);
@@ -82,10 +84,11 @@ class Reversiv2Graph extends JPanel implements MouseListener, MouseMotionListene
             for(int col=0; col<board[row].length;col++) {
                 if(board[row][col] == EMPTY && checkDirection(col, row)) {
                     board[row][col] = VALID;
-                    validCount++;
                 }
             }
         }
+        
+        
 
         int size = height/8;
         g.setColor(java.awt.Color.decode("#0C643A"));
@@ -110,6 +113,7 @@ class Reversiv2Graph extends JPanel implements MouseListener, MouseMotionListene
                 }
             }
         }
+        
         g.setFont(fontBebas);
         g.setColor(Color.decode("#FFFFFF"));
         g.drawString("Reversi Project", width-203, 50);
@@ -148,9 +152,9 @@ class Reversiv2Graph extends JPanel implements MouseListener, MouseMotionListene
         g.setColor(java.awt.Color.decode("#1B5E20"));
         g.drawString("New Game", width-155, 475);
         
+        checkWinner(totalBlack,totalWhite);
        
-        
-        checkWinner(totalBlack,totalWhite, validCount);
+
         
     }
 
@@ -183,10 +187,16 @@ class Reversiv2Graph extends JPanel implements MouseListener, MouseMotionListene
             int row = (int)Math.floor(y/size);System.out.print("clicked row: "+row+", col: "+col+"\n");
             
             makeMove(col, row);
+            repaint();
+           
         }
             
-        if(x>width-170 && y>450 && y<480){
+        else if (x>width-170 && y>450 && y<480){
                 newGame();
+        }
+
+        if (winner > 0){
+            winnerDialog(winner);
         }
     }   
     
@@ -345,7 +355,6 @@ class Reversiv2Graph extends JPanel implements MouseListener, MouseMotionListene
                 discFound = false;
                 changeTurn();
             }
-            repaint();
 
         }
     }
@@ -356,57 +365,60 @@ class Reversiv2Graph extends JPanel implements MouseListener, MouseMotionListene
     // END MOVEMENT HANDLER
 
     protected void newGame(){
-
-        if(gameOver){
-            board = new int[][] {
-                {0,0,0,0, 0,0,0,0},
-                {0,0,0,0, 0,0,0,0},
-                {0,0,0,0, 0,0,0,0},
-                {0,0,0,1, 2,0,0,0},
+        board = new int[][] {
+            {0,0,0,0, 0,0,0,0},
+            {0,0,0,0, 0,0,0,0},
+            {0,0,0,0, 0,0,0,0},
+            {0,0,0,1, 2,0,0,0},
     
-                {0,0,0,2, 1,0,0,0},
-                {0,0,0,0, 0,0,0,0},
-                {0,0,0,0, 0,0,0,0},
-                {0,0,0,0, 0,0,0,0}
-            };
-            
-        }
-        else{
-            board = new int[][] {
-                {0,0,0,0, 0,0,0,0},
-                {0,0,0,0, 0,0,0,0},
-                {0,0,0,0, 0,0,0,0},
-                {0,0,0,1, 2,0,0,0},
-    
-                {0,0,0,2, 1,0,0,0},
-                {0,0,0,0, 0,0,0,0},
-                {0,0,0,0, 0,0,0,0},
-                {0,0,0,0, 0,0,0,0}
-            };
-            
-        }      
+            {0,0,0,2, 1,0,0,0},
+            {0,0,0,0, 0,0,0,0},
+            {0,0,0,0, 0,0,0,0},
+            {0,0,0,0, 0,0,0,0}
+        };
+        winner = EMPTY;
+        repaint();
+        
       
     }
 
-    void checkWinner(int totalBlack, int totalWhite, int validCount){
+    void checkWinner(int totalBlack, int totalWhite){
+        validCount = 0;
+        for(int row = 0; row<board.length;row++) {
+            for(int col=0; col<board[row].length;col++) {
+                if(board[row][col] == VALID) {
+                    validCount++;
+                }
+            }
+        }
+        
+        System.out.print("validmove : " + validCount);
+        
         if( validCount <= 0){
             if(totalWhite<totalBlack) {
-                    winnerDialog("Black");
+                    winner = BLACK;
                 } else if(totalWhite==totalBlack) {
-                    winnerDialog("Draw");
+                    winner = 4;
                 } else {
-                    winnerDialog("White");
+                    winner = WHITE;
                 }
         }
     }
-    void winnerDialog(String winner){
-    
-        JOptionPane.showMessageDialog(this,"Selamat " + winner + " Berhasil Menang !\n Main baru lagi yuk");
-        newGame();
+    void winnerDialog(int winner){
+        String win ="";
+        switch(winner){
+            case BLACK:
+                win = "BLACK";
+                break;
+            case WHITE:
+                win = "WHITE";
+                break;
+            case 4:
+                win = "DRAW";
+                break;
+        }
 
-        repaint();
-        repaint();
-
+        JOptionPane.showMessageDialog(this,"Congratulation " + win + " win the game! !\n Let's play new game !");
         
         
     }
